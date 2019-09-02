@@ -128,9 +128,9 @@ update_data = function(rt_type) {
     set.seed(42)
     rt_data = switch(rt_type,
       # Real datasets
-      'accuracy' = filter(speed_acc, condition == 'accuracy', id == 3)$rt,
-      'speed' = filter(speed_acc, condition == 'speed', id == 3)$rt,
-      'rr98' = filter(rr98, correct == TRUE, id == 'nh', source == 'light')$rt,
+      'accuracy' = subset(speed_acc, condition == 'accuracy' & id == 3)$rt,
+      'speed' = subset(speed_acc, condition == 'speed' & id == 3)$rt,
+      'rr98' = subset(rr98, correct == TRUE & id == 'nh' & source == 'light')$rt,
       
       # Theoretical datasets
       'gauss' = rnorm(NSAMPLES, mean=0.7, sd=0.2),
@@ -153,9 +153,6 @@ update_data = function(rt_type) {
   rt_data <<- rt_data[ifelse(rt_data < TRIM_MIN | rt_data > TRIM_MAX, FALSE, TRUE)]
 }
 
-import_rts = function(rt_string) {
-  
-}
 ```
 
 
@@ -218,9 +215,9 @@ shinyApp(
       TRIM_MIN <<- input$trim_min
       TRIM_MAX <<- input$trim_max
       
-      # If custom data has been pasted, parse it to vector.
+      # If custom data has been pasted, parse it to a numeric vector.
       if(input$rts_input != '') {
-        update_data(rt_type = as.numeric(strsplit(input$rts_input, '[;, ]+')[[1]]))
+        update_data(rt_type = as.numeric(strsplit(input$rts_input, '[;,\t ]+')[[1]]))  # Splot by semi-colon, comma, tab, and space
       }
       
       # Else just set data by label
@@ -263,9 +260,9 @@ shinyApp(
       # Sliders
       sidebarPanel(
         width=4,
-        sliderInput(inputId = "gauss_mu", label = NULL, pre='<i>&mu;</i> = ',
+        sliderInput("gauss_mu", label = NULL, pre='<i>&mu;</i> = ',
                     min = 0, max = 3, value = 1, step = 0.01),
-        sliderInput(inputId = 'gauss_sigma', label = NULL, pre='<i>&sigma;</i> = ',
+        sliderInput('gauss_sigma', label = NULL, pre='<i>&sigma;</i> = ',
                     min = 0, max = 1, step = 0.01, value = 0.4)
       ),
       
@@ -318,11 +315,11 @@ shinyApp(
       # Sliders
       sidebarPanel(
         width=4,
-        sliderInput(inputId = "exgauss_mu", label = NULL, pre='<i>&mu;</i> = ',
+        sliderInput("exgauss_mu", label = NULL, pre='<i>&mu;</i> = ',
                     min = 0, max = 3, value = 1, step = 0.01),
-        sliderInput(inputId = 'exgauss_sigma', label = NULL, pre='<i>&sigma;</i> = ',
+        sliderInput('exgauss_sigma', label = NULL, pre='<i>&sigma;</i> = ',
                     min = 0, max = 1, step = 0.01, value = 0.15),
-        sliderInput(inputId = 'exgauss_lambda', label = NULL, pre='<i>&lambda;</i> = ',
+        sliderInput('exgauss_lambda', label = NULL, pre='<i>&lambda;</i> = ',
                     min = 0, max = 2, step = 0.01, value = 0.3)
       ),
       
@@ -377,13 +374,13 @@ shinyApp(
       # Sliders
       sidebarPanel(
         width=4,
-        sliderInput(inputId = "wiener_alpha", label = "Boundary separation", pre='<i>&alpha;</i> = ',
+        sliderInput("wiener_alpha", label = "Boundary separation", pre='<i>&alpha;</i> = ',
                     min = 0.5, max = 3, value = 1.5, step = 0.01),
-        sliderInput(inputId = 'wiener_tau', label = 'Non-decision time', pre='<i>&tau;</i> = ',
+        sliderInput('wiener_tau', label = 'Non-decision time', pre='<i>&tau;</i> = ',
                     min = 0, max = 1, step = 0.01, value = 0.4),
-        sliderInput(inputId = 'wiener_beta', label = 'Bias', pre='<i>&beta;</i> = ',
+        sliderInput('wiener_beta', label = 'Bias', pre='<i>&beta;</i> = ',
                     min = 0, max = 1, step = 0.01, value = 0.3),
-        sliderInput(inputId = 'wiener_delta', label = 'Drift rate', pre='<i>&delta;</i> = ',
+        sliderInput('wiener_delta', label = 'Drift rate', pre='<i>&delta;</i> = ',
                     min = -1, max = 4, step = 0.01, value = 1.5)
       ),
   
@@ -444,11 +441,11 @@ shinyApp(
       # Sliders
       sidebarPanel(
         width=4,
-        sliderInput(inputId = "sinvgauss_mu", label = NULL, pre='<i>&mu;</i> = ',
+        sliderInput("sinvgauss_mu", label = NULL, pre='<i>&mu;</i> = ',
                     min = 0, max = 2, value = 0.8, step = 0.01),
-        sliderInput(inputId = 'sinvgauss_shape', label = NULL, pre='shape = ',
+        sliderInput('sinvgauss_shape', label = NULL, pre='shape = ',
                     min = 0, max = 15, value = 4, step = 0.1),
-        sliderInput(inputId = 'sinvgauss_shift', label = NULL, pre='shift = ',
+        sliderInput('sinvgauss_shift', label = NULL, pre='shift = ',
                     min = 0, max = 2, value = 0, step = 0.01)
       ),
       
@@ -501,11 +498,11 @@ shinyApp(
     sidebarLayout(
       sidebarPanel(
         width=4,
-        sliderInput(inputId = 'slog_mu', label = NULL, pre='<i>&mu;</i> = ',
+        sliderInput('slog_mu', label = NULL, pre='<i>&mu;</i> = ',
                     min = -2, max = 2, step = 0.05, value = -0.6),
-        sliderInput(inputId = 'slog_sigma', label = NULL, pre='<i>&sigma;</i> = ',
+        sliderInput('slog_sigma', label = NULL, pre='<i>&sigma;</i> = ',
                     min = 0, max = 2, step = 0.01, value = 0.6),
-        sliderInput(inputId = "slog_shift", label = NULL, pre='shift = ',
+        sliderInput("slog_shift", label = NULL, pre='shift = ',
                     min = 0, max = 1.5, value = 0, step = 0.01)
       ),
       
@@ -555,11 +552,11 @@ shinyApp(
       # Sliders
       sidebarPanel(
         width=4,
-        sliderInput(inputId = "skew_mu", label = NULL, pre='<i>&mu;</i> = ',
+        sliderInput("skew_mu", label = NULL, pre='<i>&mu;</i> = ',
                     min = 0, max = 3, value = 1, step = 0.01),
-        sliderInput(inputId = 'skew_sigma', label = NULL, pre='<i>&sigma;</i> = ',
+        sliderInput('skew_sigma', label = NULL, pre='<i>&sigma;</i> = ',
                     min = 0, max = 1, step = 0.01, value = 0.3),
-        sliderInput(inputId = 'skew_alpha', label = NULL, pre='<i>&alpha;</i> = ',
+        sliderInput('skew_alpha', label = NULL, pre='<i>&alpha;</i> = ',
                     min = -15, max = 15, step = 0.1, value = 3.5)
       ),
       
@@ -609,9 +606,9 @@ shinyApp(
       # Sliders
       sidebarPanel(
         width=4,
-        sliderInput(inputId = "gamma_shape", label = NULL, pre='shape = ',
+        sliderInput("gamma_shape", label = NULL, pre='shape = ',
                     min = 0, max = 50, value = 5, step = 0.1),
-        sliderInput(inputId = 'gamma_rate', label = NULL, pre='rate = ',
+        sliderInput('gamma_rate', label = NULL, pre='rate = ',
                     min = 0, max = 50, value = 10, step = 0.1)
       ),
       
@@ -667,11 +664,11 @@ shinyApp(
       # Sliders
       sidebarPanel(
         width=4,
-        sliderInput(inputId = "sweibull_shape", label = NULL, pre='shape = ',
+        sliderInput("sweibull_shape", label = NULL, pre='shape = ',
                     min = 0, max = 10, value = 2.2, step = 0.1),
-        sliderInput(inputId = 'sweibull_scale', label = NULL, pre='scale = ',
+        sliderInput('sweibull_scale', label = NULL, pre='scale = ',
                     min = 0, max = 2, value = 0.5, step = 0.01),
-        sliderInput(inputId = 'sweibull_shift', label = NULL, pre='shift = ',
+        sliderInput('sweibull_shift', label = NULL, pre='shift = ',
                     min = 0, max = 2, value = 0, step = 0.01)
       ),
       
@@ -728,19 +725,19 @@ shinyApp(
       sidebarPanel(
         width=4,
         
-        sliderInput(inputId = "lba_A", label = NULL, pre='A = ',
+        sliderInput("lba_A", label = NULL, pre='A = ',
                     min = 0, max = 2, value = 1, step = 0.01),
-        sliderInput(inputId = 'lba_b', label = NULL, pre='b = ',
+        sliderInput('lba_b', label = NULL, pre='b = ',
                     min = 1, max = 10, value = 2, step = 0.05),
-        sliderInput(inputId = 'lba_t0', label = NULL, pre='t0 = ',
+        sliderInput('lba_t0', label = NULL, pre='t0 = ',
                     min = -1, max = 2.5, value = 0.2, step = 0.01),
-        sliderInput(inputId = 'lba_drift_mm', label = NULL, pre='mean(mean_v) = ',
+        sliderInput('lba_drift_mm', label = NULL, pre='mean(mean_v) = ',
                     min = 0, max = 10, value = 3, step = 0.1),
-        sliderInput(inputId = 'lba_drift_msd', label = NULL, pre='sd(mean_v) = ',
+        sliderInput('lba_drift_msd', label = NULL, pre='sd(mean_v) = ',
                     min = 0, max = 6, value = 1, step = 0.1),
-        sliderInput(inputId = 'lba_drift_sdm', label = NULL, pre='mean(sd_v) = ',
+        sliderInput('lba_drift_sdm', label = NULL, pre='mean(sd_v) = ',
                     min = 0, max = 6, value = 1, step = 0.1),
-        sliderInput(inputId = 'lba_drift_sdsd', label = NULL, pre='sd(sd_v) = ',
+        sliderInput('lba_drift_sdsd', label = NULL, pre='sd(sd_v) = ',
                     min = 0, max = 6, value = 1, step = 0.1)
       ),
   
