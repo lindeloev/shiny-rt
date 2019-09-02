@@ -19,17 +19,18 @@ TO DO NOW:
    * Make a frequentist column as well (e.g., for gamma and normal). Add to text too!
    
  * TEXT:
-   * Is a shift parameter neccessary? Trunk behavior can do a lot of it.
    * Think about "trunk" name.
-   * Maybe score if the *value* of the parameter has some straight-forward interpretation.
+   * The intro is loooooong. Should I just write an opinion instead?
    * More info about inverse gaussian?
    * RUN THROUGH GRAMMARLY OR SIMILAR SPELL CHECKER!
-   * Add icons to shift + trunk + spread
+   * Add icons to shift + trunk + scale
+   * Add README.md and LICENSE for GitHub
+   * Color parameters red/green according to intro credo? (Probably not - too judgmental for teaching use)
 
  * Publish it online and check mobile!
-
- * PLOTS:
-   * Challenge: move just one slider to match different RT.
+ 
+ * ANALYSIS:
+   * For later and probably not...: add brms families for shifted Weibull and shifted Wald
 
 -->
 
@@ -159,23 +160,33 @@ import_rts = function(rt_string) {
 
 
 # Types of parameters
-A few types of parameters occur frequently. We will use the presense and absence of these parameters as one (of several) criterions to evaluate how good a distribution is.
+There are three general types of parameters to describe distributions: location, scale, and shape. For reaction times, I will add one more type and call it "trunk" which is a combination of location and scale. Try dragging some sliders to see these kinds of parameters in action.
 
- * **Shift:** moves the whole distribution to the left or right without altering its shape. This is sometimes called *non-decision time* in models where the value of the shift reflect the earliest recorded RTs. No animal can percieve or respond in 0.0 ms, so it's good to have a shift parameter.
- * **Trunk:** models the time at which the bulk of RTs are recorded (highest density, e.g., the mean, median, or mode). One dominant feature of RTs is that the spread increases with the mean [(Wagenmakers et al., 2007)](http://ejwagenmakers.com/2007/WagenmakersBrown2007.pdf) so a parameter has to do this to qualify as a trunk parameter.
- * **Spread:** Narrows or widens the timeframe within which RTs are recorded over and beyond the behavior of the *trunk* parameter, i.e., without (severely) affecting the mean/median/mode. This probably scales with the *uncertainty* associated with the task, e.g., through interference.
+ * **Trunk:** A dominant feature of RTs is that the standard deviation increases approximately linearly with the mean [(Wagenmakers et al., 2007)](http://ejwagenmakers.com/2007/WagenmakersBrown2007.pdf). For conditions with longer reaction times (e.g., incongruent trials) you will see more varied reaction times than for conditions with shorter reaction times (e.g., congruent trials). For interpretability, it is convenient to have one parameter that changes both rather than having to regress on each separately and always interpret their interaction. Ideally, the value of the trunk parameter should be somewhere around the **center** (highest density region, e.g., the median RT or the mode RT).
 
-Try yourself to drag some sliders below to see this behavior. When one parameter does only one of these jobs, you can model differences between experimental conditions in a non-ambiguous way. For parameters that does more than one of the above, I will distinguish between:
+ * **Location:** Moves the whole distribution towards the left (longer RTs) or right (shorter RTs) without altering its **shape** or **scale** (see below). There are two types:
+   * **Location shift:** Sometimes called **non-decision time**, this denotes is the earliest possible reaction time. It's good to have a shift-parameter since no animal can percieve or respond in 0.0 ms (simple reaction time). Models without a shift parameter often end up predicting non-zero probabilities of impossibly short RTs. 
+   * **Location center:** Somewhere "in the middle" of the distribution (e.g., $\mu$ in the normal distribution). I argued above that we should prefer a **trunk**-like parameter to model the center. Some distributions have a **rate** which is just the inverse of the center.
+
+ * **Scale:** Stretches or squeezes the distribution without (severely) changing the **location** or the **trunk**. 
+
+ * **Shape:** Changes the overall shape of the distribution without changing the **location** or **scale**. RTs have pretty similar shapes across tasks, namely a right skew. So I'd rather choose a distribution which inherently has the "right" shape than modeling this as a parameter. The **scale** parameter is often sufficient to do the fine-tuning of the skewness once a right-skewed distribution is chosen.
+
+
+There are also parameters that does more than trunk, location, and scale. I will distinguish between
 
  * **Mechanism:** has a clear mechanistic interpretation motivated by theory.
- * **Messy:** not motivated by theory.
+ * **Messy:** not motivated by theory. Controversially, I will include **shape** as a messy parameter because it complicates things.
 
-And here are our two commandments:
+And here are three commandments:
 
 <!-- Make this a proper quote -->
 
-    * Messy parameters are bad.
-    * If you have no mechanism parameters, you should have ashift, trunk, AND a spread.
+> 1. Distributions with messy parameters are bad.
+> 2. Distributions with mechanism parameters are good.
+> 3. Descriptive distributions with a trunk, a location shift, AND a scale parameter are good.
+
+
 
 
 
@@ -236,8 +247,8 @@ This models responses from a single mean with a symmetrical dispersion towards f
 
 **Parameters**
 
- * $\mu$ (**shift**): the mean.
- * $\sigma$ (**spread**): the standard deviation. This models (symmetric) variability in RTs.
+ * $\mu$ (**center**): the mean.
+ * $\sigma$ (**scale**): the standard deviation. This models (symmetric) variability in RTs.
 
 
 Fit it using `brms::brm(rt ~ 1, ..., family=gaussian())`. Most packages use the Gaussian by default.
@@ -293,8 +304,8 @@ If you believe that response originale as a mix of two independent processes, (1
 
 **Parameters:**
 
-* $\mu$ (**shift**): the mean of the gaussian. This models shorter/longer mean RTs.
-* $\sigma$ (**spread**): the standard deviation of the gaussian. This models (symmetric) variability in RTs.
+* $\mu$ (**center**): the mean of the gaussian. This models shorter/longer mean RTs.
+* $\sigma$ (**scale**): the standard deviation of the gaussian. This models (symmetric) variability in RTs.
 * $\lambda$ (**messy**): the decay rate of the exponential. This models the tail of long RTs. Higher $\lambda$ --> more tail dominance over the Gaussian.
 
 Fit it using `brms::brm(rt ~ 1, ..., family=exgaussian())`.
@@ -349,10 +360,12 @@ Also called the *Diffusion Decision Model (DDM)*, this is probably the most popu
 
 **Parameters:**
 
- * $\alpha$ (**trunk** and **mechanism**): Boundary separation. The distance between thresholds. Longer distance --> longer and more dispersed RT before walker crosses threshold.
- * $\tau$ (**shift** and **mechanism**): Non-decision time (ndt). The time at which the random walker starts.
- * $\beta$ (**trunk** and **mechanism**): Bias. How close the walker starts to the upper threshold ($\beta = 0.5$ is in the middle). Higher = closer = faster and more condensed RTs.
- * $\delta$ (**trunk** and **mechanism**): Drift Rate. The speed of the walker. Higher --> faster and more condensed RTs.
+All of these are mechanism-like
+
+ * $\alpha$ (**trunk**): Boundary separation. The distance between thresholds. Longer distance --> longer and more dispersed RT before walker crosses threshold.
+ * $\tau$ (**shift**): Non-decision time (ndt). The time at which the random walker starts.
+ * $\beta$ (**trunk**): Bias. How close the walker starts to the upper threshold ($\beta = 0.5$ is in the middle). Higher = closer = faster and more condensed RTs.
+ * $\delta$ (**trunk**): Drift Rate. The speed of the walker. Higher --> faster and more condensed RTs.
 
 See [this three-part brms tutorial](http://singmann.org/wiener-model-analysis-with-brms-part-i/) by Henrik Singman on how to fit it and do regression on the parameters. It usually takes days or weeks to fit, but [Wagenmakers (2007)](https://www.ejwagenmakers.com/2007/EZ.pdf) made the [EZ diffusion calculator](https://www.ejwagenmakers.com/EZ.html) which approximates the parameters in the simplest scenario. The [HDDM python package](http://ski.clps.brown.edu/hddm_docs/) can do it as well.
 
@@ -410,7 +423,7 @@ shinyApp(
 
  * $\mu$ (**trunk**)
  * $shape$ (**messy**)
- * $shift$ (**shift**): time of earliest possible response. When $shift = 0$ it is a plain *Inverse Gaussian* or *Wald* distribution, i.e., only two parameters.
+ * $shift$: time of earliest possible response. When $shift = 0$ it is a plain *Inverse Gaussian* or *Wald* distribution, i.e., only two parameters.
 
 Fit the (non-shifted) inverse Gaussian using `brms::brm(rt ~ 1, ..., family=inverse.gaussian()`.
 
@@ -476,7 +489,7 @@ It's called "log-normal" because the parameters are the mean and sd of the log-t
 **Parameters:**
 
  * $\mu$ (**trunk**): the mean of the log-normal distribution. The mean of $\mu$ represents the median RT. The median RT is then $shift + exp(\mu)$.
- * $\sigma$ (**spread**): the standard deviation of the log-normal distribution.
+ * $\sigma$ (**scale**): the standard deviation of the log-normal distribution. Increases the mean but not the median of $\mu$.
  * $shift$ (**shift**): time of the earliest possible response. When $shift = 0$, it's a straight-up *log-normal distribution* with two parameters.
 
 Fit it using `brms::brm(rt ~ 1, ..., family = shifted_lognormal())`.
@@ -529,8 +542,8 @@ Adds a skew to the normal (Gaussian) distribution via an extra skew-parameter. I
 
 **Parameters:**
 
- * $\mu$ (**shift**): the mean.
- * $\sigma$ (**spread**): the standard deviation. Changing $\sigma$ preserves the mean $\mu$ but not the median. Note that when $\alpha \neq 0$, the distribution is not symmetric, so the don't interpret it like the SD of a normal distribution.
+ * $\mu$ (**center**): the mean.
+ * $\sigma$ (**scale**): the standard deviation. Changing $\sigma$ preserves the mean $\mu$ but not the median. Note that when $\alpha \neq 0$, the distribution is not symmetric, so the don't interpret it like the SD of a normal distribution.
  * $\alpha$ (**messy**): the skewness. When $\alpha = 0$, it's a Gaussian.
  
 Fit it using `brms::brm(rt ~ 1, ..., family=skew_normal()`.
@@ -582,7 +595,7 @@ The gamma distribution is so important in statistics, that it probably spilled o
 
 **Parameters:**
 
-Both parameters in isolation are **trunk**-like and their interaction determines **spread**. I think that this makes them **messy**.
+Both parameters in isolation are **trunk**-like so their interaction determines **scale** and **location**. I think that this makes them **messy**.
 
  * $shape$ (**messy**)
  * $rate$ (**messy**)
@@ -693,7 +706,10 @@ shinyApp(
 ## Linear Ballistic Accumulator {#lba}
 This model has some resemblance to the [Wiener diffusion model](#wiener) in that it models latent "movements" towards decision thresholds, and is very much focused on *mechanisms*. It likewise applies to two-alternative forced-choice (2afc) scenarios, requiring data on accuracy as well (correct/incorrect response). Although it involves a lot of parameters, the model itself is (at least supposed to be) simpler than the diffusion model [as explained in Brown & Heathcote (2008)](https://linkinghub.elsevier.com/retrieve/pii/S0010-0285(07)00072-2). A nice visualization from that paper [escaped the paywall here](https://www.semanticscholar.org/paper/The-simplest-complete-model-of-choice-response-Brown-Heathcote/6a23d45269edd7783fa6edd8c469ca8fb5d53ac6/figure/4).
 
+
 **Parameters:**
+
+All of these are mechanism-like:
 
 * $A$: upper bound of the starting point. The starting point is modeled as randomly drawn in this interval.
 * $b$: response threshold (usually, $b > A$).
@@ -702,6 +718,7 @@ This model has some resemblance to the [Wiener diffusion model](#wiener) in that
 * $sd\_v$: the mean standard devation of the drift rate and *it's* variability (SD)
 
 Fit it using `glba::lba()`. There are some helpful distributions in the `rtdists` package.
+
 
 ```{r, echo=FALSE}
 shinyApp(
