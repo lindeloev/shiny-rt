@@ -12,25 +12,23 @@ runtime: shiny
 TO DO NOW:
  * DATASETS
    * Change theoretical distributions to be more idiosyncratic
-   * Add Mental Rotation dataset or similar with long response times.
    
  * CHEAT SHEET:
    * Make a checklist table / cheat sheet for all distributions, rather than the pros/cons.
    * Make a frequentist column as well (e.g., for gamma and normal). Add to text too!
    
  * TEXT:
-   * Think about "trunk" name.
    * The intro is loooooong. Should I just write an opinion instead?
    * More info about inverse gaussian?
    * RUN THROUGH GRAMMARLY OR SIMILAR SPELL CHECKER!
-   * Add icons to shift + trunk + scale
+   * Add icons to shift + difficulty + scale
    * Add README.md and LICENSE for GitHub
-   * Color parameters red/green according to intro credo? (Probably not - too judgmental for teaching use)
 
  * Publish it online and check mobile!
  
- * ANALYSIS:
+ * ANALYSIS AND PLOT:
    * For later and probably not...: add brms families for shifted Weibull and shifted Wald
+   * (Minor) The dataset selector does not update the trims and bin values when these are set in update_data
 
 -->
 
@@ -46,8 +44,9 @@ library(rtdists)
 
 # SETTINGS
 FIG_HEIGHT = 290
-TRIM_MIN = 0.2
+TRIM_MIN = 0.180
 TRIM_MAX = 2
+BINS = 100
 RESOLUTION = 1024  # Number of points to evaluate densities at
 NSAMPLES = 10000  # Number of samples for theoretical distributions
 UPDATE_INTERVAL = 1000  # ms between each applet checking for updates in dataset
@@ -66,7 +65,7 @@ score_fit = function(rt_type, dfun) {
 show_plot = function(input, dfun = NULL) {
   # Histogram
   par(mar = c(5, 0, 0, 0) + 0.1)
-  hist(rt_data, breaks=seq(0, TRIM_MAX, TRIM_MAX/100), xlim=c(0, TRIM_MAX), 
+  hist(rt_data, breaks=seq(0, TRIM_MAX, TRIM_MAX/BINS), xlim=c(0, TRIM_MAX), 
        freq = FALSE, 
        axes = FALSE,  # To remove y-axis, we need to remove both first...
        xlab = 'Reaction Time', ylab = NULL, main = NULL)
@@ -102,12 +101,15 @@ show_plot = function(input, dfun = NULL) {
 ```{r, echo=FALSE}
 data("rr98")
 data("speed_acc")
+mrt_data = read.csv('mrt_data.csv')
 
 rt_types = c(
   # Real RTs
   'Brightness discrimination (Ratcliff & Rouder, 1998)' = 'rr98',
   'Discriminate words/non-words - be accurate (Wagenmakers et al., (2008)' = 'accuracy',
   'Discriminate words/non-words - be fast (Wagenmakers et al., (2008)' = 'speed',
+  'Mental Rotation of 2D figures - 0-30 degrees' = 'mrt_short',
+  'Mental Rotation of 2D figures - 150-180 degrees' = 'mrt_long',
   
   # Theoretical RTs
   'Gaussian (Normal distribution)' = 'gauss',
@@ -131,6 +133,8 @@ update_data = function(rt_type) {
       'accuracy' = subset(speed_acc, condition == 'accuracy' & id == 3)$rt,
       'speed' = subset(speed_acc, condition == 'speed' & id == 3)$rt,
       'rr98' = subset(rr98, correct == TRUE & id == 'nh' & source == 'light')$rt,
+      'mrt_short' = subset(mrt_data, rotation_cat == 'short')$rt,
+      'mrt_long' = subset(mrt_data, rotation_cat == 'long')$rt,
       
       # Theoretical datasets
       'gauss' = rnorm(NSAMPLES, mean=0.7, sd=0.2),
@@ -144,6 +148,13 @@ update_data = function(rt_type) {
       #'weibull' = rweibull(NSAMPLES, shape=3.5, scale=0.6),
       'sweibull' = rshifted_weibull(NSAMPLES, shape=3.5, scale=0.6, shift=0)
     )
+      
+    if(rt_type == 'rr98') TRIM_MAX <<- 1.2
+    if(rt_type %in% c('mrt_short', 'mrt_long')) {
+      TRIM_MAX <<- 8
+      BINS <<- 20
+    }
+    
   # But one can also insert one's own data:
   } else if(is.numeric(rt_type)) {
     rt_data = rt_type
@@ -159,18 +170,18 @@ update_data = function(rt_type) {
 # Types of parameters
 There are three general types of parameters to describe distributions: location, scale, and shape. For reaction times, I will add one more type and call it "trunk" which is a combination of location and scale. Try dragging some sliders to see these kinds of parameters in action.
 
- * **Trunk:** A dominant feature of RTs is that the standard deviation increases approximately linearly with the mean [(Wagenmakers et al., 2007)](http://ejwagenmakers.com/2007/WagenmakersBrown2007.pdf). For conditions with longer reaction times (e.g., incongruent trials) you will see more varied reaction times than for conditions with shorter reaction times (e.g., congruent trials). For interpretability, it is convenient to have one parameter that changes both rather than having to regress on each separately and always interpret their interaction. Ideally, the value of the trunk parameter should be somewhere around the **center** (highest density region, e.g., the median RT or the mode RT).
+ * **Difficulty:** A dominant feature of RTs is that the standard deviation increases approximately linearly with the mean [(Wagenmakers et al., 2007)](http://ejwagenmakers.com/2007/WagenmakersBrown2007.pdf). For conditions with longer reaction times (e.g., incongruent trials) you will see more varied reaction times than for conditions with shorter reaction times (e.g., congruent trials). For interpretability, it is convenient to have one parameter that changes both rather than having to regress on each separately and always interpret their interaction. Ideally, the value of the difficulty parameter should be somewhere around the **center** (highest density region, e.g., the median RT or the mode RT).
 
  * **Location:** Moves the whole distribution towards the left (longer RTs) or right (shorter RTs) without altering its **shape** or **scale** (see below). There are two types:
    * **Location shift:** Sometimes called **non-decision time**, this denotes is the earliest possible reaction time. It's good to have a shift-parameter since no animal can percieve or respond in 0.0 ms (simple reaction time). Models without a shift parameter often end up predicting non-zero probabilities of impossibly short RTs. 
-   * **Location center:** Somewhere "in the middle" of the distribution (e.g., $\mu$ in the normal distribution). I argued above that we should prefer a **trunk**-like parameter to model the center. Some distributions have a **rate** which is just the inverse of the center.
+   * **Location center:** Somewhere "in the middle" of the distribution (e.g., $\mu$ in the normal distribution). I argued above that we should prefer a **difficulty**-like parameter to model the center. Some distributions have a **rate** which is just the inverse of the center.
 
- * **Scale:** Stretches or squeezes the distribution without (severely) changing the **location** or the **trunk**. 
+ * **Scale:** Stretches or squeezes the distribution without (severely) changing the **location** or the **difficulty**. 
 
  * **Shape:** Changes the overall shape of the distribution without changing the **location** or **scale**. RTs have pretty similar shapes across tasks, namely a right skew. So I'd rather choose a distribution which inherently has the "right" shape than modeling this as a parameter. The **scale** parameter is often sufficient to do the fine-tuning of the skewness once a right-skewed distribution is chosen.
 
 
-There are also parameters that does more than trunk, location, and scale. I will distinguish between
+There are also parameters that does more than difficulty, location, and scale. I will distinguish between
 
  * **Mechanism:** has a clear mechanistic interpretation motivated by theory.
  * **Messy:** not motivated by theory. Controversially, I will include **shape** as a messy parameter because it complicates things.
@@ -181,7 +192,7 @@ And here are three commandments:
 
 > 1. Distributions with messy parameters are bad.
 > 2. Distributions with mechanism parameters are good.
-> 3. Descriptive distributions with a trunk, a location shift, AND a scale parameter are good.
+> 3. Descriptive distributions with a difficulty, a location shift, AND a scale parameter are good.
 
 
 
@@ -199,8 +210,9 @@ shinyApp(
     ),
     
     # Trim on one line
-    div(style="display: inline-block;vertical-align:top;", numericInput('trim_min', label = 'Min RT', value=0.180, min=0, max=10, step=0.1, width='80px')),
-    div(style="display: inline-block;vertical-align:top;", numericInput('trim_max', label = 'Max RT', value=2.0, min=0, max=10, step=0.1, width='80px')),
+    div(style="display: inline-block;vertical-align:top;", numericInput('trim_min', label = 'Min RT', value=TRIM_MIN, min=0, max=10, step=0.1, width='80px')),
+    div(style="display: inline-block;vertical-align:top;", numericInput('trim_max', label = 'Max RT', value=TRIM_MAX, min=0, max=10, step=0.1, width='80px')),
+    div(style="display: inline-block;vertical-align:top;", numericInput('bins', label = 'Bins', value=BINS, min=2, max=1000, step=10, width='80px')),
     
     # Placeholder for histogram
     fluidRow(
@@ -214,6 +226,7 @@ shinyApp(
     output$plot_select = renderPlot(height=FIG_HEIGHT, expr = {
       TRIM_MIN <<- input$trim_min
       TRIM_MAX <<- input$trim_max
+      BINS <<- input$bins
       
       # If custom data has been pasted, parse it to a numeric vector.
       if(input$rts_input != '') {
@@ -263,7 +276,7 @@ shinyApp(
         sliderInput("gauss_mu", label = NULL, pre='<i>&mu;</i> = ',
                     min = 0, max = 3, value = 1, step = 0.01),
         sliderInput('gauss_sigma', label = NULL, pre='<i>&sigma;</i> = ',
-                    min = 0, max = 1, step = 0.01, value = 0.4)
+                    min = 0, max = 1.5, step = 0.01, value = 0.4)
       ),
       
       # Placeholder for histogram
@@ -359,10 +372,10 @@ Also called the *Diffusion Decision Model (DDM)*, this is probably the most popu
 
 All of these are mechanism-like
 
- * $\alpha$ (**trunk**): Boundary separation. The distance between thresholds. Longer distance --> longer and more dispersed RT before walker crosses threshold.
+ * $\alpha$ (**difficulty**): Boundary separation. The distance between thresholds. Longer distance --> longer and more dispersed RT before walker crosses threshold.
  * $\tau$ (**shift**): Non-decision time (ndt). The time at which the random walker starts.
- * $\beta$ (**trunk**): Bias. How close the walker starts to the upper threshold ($\beta = 0.5$ is in the middle). Higher = closer = faster and more condensed RTs.
- * $\delta$ (**trunk**): Drift Rate. The speed of the walker. Higher --> faster and more condensed RTs.
+ * $\beta$ (**difficulty**): Bias. How close the walker starts to the upper threshold ($\beta = 0.5$ is in the middle). Higher = closer = faster and more condensed RTs.
+ * $\delta$ (**difficulty**): Drift Rate. The speed of the walker. Higher --> faster and more condensed RTs.
 
 See [this three-part brms tutorial](http://singmann.org/wiener-model-analysis-with-brms-part-i/) by Henrik Singman on how to fit it and do regression on the parameters. It usually takes days or weeks to fit, but [Wagenmakers (2007)](https://www.ejwagenmakers.com/2007/EZ.pdf) made the [EZ diffusion calculator](https://www.ejwagenmakers.com/EZ.html) which approximates the parameters in the simplest scenario. The [HDDM python package](http://ski.clps.brown.edu/hddm_docs/) can do it as well.
 
@@ -375,7 +388,7 @@ shinyApp(
       sidebarPanel(
         width=4,
         sliderInput("wiener_alpha", label = "Boundary separation", pre='<i>&alpha;</i> = ',
-                    min = 0.5, max = 3, value = 1.5, step = 0.01),
+                    min = 0.5, max = 3.5, value = 1.5, step = 0.01),
         sliderInput('wiener_tau', label = 'Non-decision time', pre='<i>&tau;</i> = ',
                     min = 0, max = 1, step = 0.01, value = 0.4),
         sliderInput('wiener_beta', label = 'Bias', pre='<i>&beta;</i> = ',
@@ -412,71 +425,6 @@ shinyApp(
 
 
 
-## (Shifted) Inverse Gaussian {#invgauss}
-... also known as the *(Shifted) Wald*. It is not as "inverse" of the Gaussian as it sounds, and is a purely descriptive distribution. Read more on [Wikipedia](https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution)
-
-
-**Parameters:**
-
- * $\mu$ (**trunk**)
- * $shape$ (**messy**)
- * $shift$: time of earliest possible response. When $shift = 0$ it is a plain *Inverse Gaussian* or *Wald* distribution, i.e., only two parameters.
-
-Fit the (non-shifted) inverse Gaussian using `brms::brm(rt ~ 1, ..., family=inverse.gaussian()`.
-
-
-```{r, echo=FALSE}
-# Density and radnom generation for (Shifted) Inverse Gaussian / (Shifted) Wald.
-dshifted_inv_gaussian = function(x, mu, shape, shift) {
-  dens = dinv_gaussian(x - shift, mu, shape)
-  dens[is.na(dens)] = 0  # NaN means 0 density during shift.
-  dens
-}
-rshifted_inv_gaussian = function(n, mu, shape, shift) shift + dinv_gaussian(n, mu, shape)
-
-# Shiny!
-shinyApp(
-  fluidPage(
-    sidebarLayout(
-      # Sliders
-      sidebarPanel(
-        width=4,
-        sliderInput("sinvgauss_mu", label = NULL, pre='<i>&mu;</i> = ',
-                    min = 0, max = 2, value = 0.8, step = 0.01),
-        sliderInput('sinvgauss_shape', label = NULL, pre='shape = ',
-                    min = 0, max = 15, value = 4, step = 0.1),
-        sliderInput('sinvgauss_shift', label = NULL, pre='shift = ',
-                    min = 0, max = 2, value = 0, step = 0.01)
-      ),
-      
-      # Placeholder for histogram
-      mainPanel(width=8, plotOutput(outputId = "histogram", height='100%'))
-    )
-  ),
-  
-  # Render histogram on server
-  function(input, output) {
-    # Check every second whether global data was updated
-    pollData = reactivePoll(UPDATE_INTERVAL, session,
-      function() last_data_update,
-      function() ''
-    )
-    
-    # Render plot
-    output$histogram = renderPlot(height=FIG_HEIGHT, expr = {
-      pollData()  # Update plot if global data was changed
-      dfun = function(x) dshifted_inv_gaussian(x, input$sinvgauss_mu, input$sinvgauss_shape, input$sinvgauss_shift)
-      show_plot(input, dfun)
-    })
-  },
-  
-  options = list(height=590)
-)
-```
-
-
-
-
 ## (Shifted) Log-normal {#slog}
 When using logarithms, you model *percentage increase or decrease* instead of absolute differences. That is, rather than saying "RTs are 40 ms slower in incongruent trials", your parameter(s) say that "RTs are 7% slower in incongruent trials". This embodies the intuition that a difference of 40 ms can be huge for simple reaction times but insignificant for RTs around 10 seconds. Mathematically it is about *multiplicative* relationships rather than *additive* relationships, and this makes some sense when talking about RTs, so I'd say that the shifted log-normal is somewhere between being descriptive and mechanistic. In general, log-like models [makes a lot of sense for most positive-only variables](https://statmodeling.stat.columbia.edu/2019/08/21/you-should-usually-log-transform-your-positive-data/) like RT.
 
@@ -485,7 +433,7 @@ It's called "log-normal" because the parameters are the mean and sd of the log-t
 
 **Parameters:**
 
- * $\mu$ (**trunk**): the mean of the log-normal distribution. The mean of $\mu$ represents the median RT. The median RT is then $shift + exp(\mu)$.
+ * $\mu$ (**difficulty**): the mean of the log-normal distribution. The mean of $\mu$ represents the median RT. The median RT is then $shift + exp(\mu)$.
  * $\sigma$ (**scale**): the standard deviation of the log-normal distribution. Increases the mean but not the median of $\mu$.
  * $shift$ (**shift**): time of the earliest possible response. When $shift = 0$, it's a straight-up *log-normal distribution* with two parameters.
 
@@ -534,6 +482,71 @@ shinyApp(
 
 
 
+
+## (Shifted) Inverse Gaussian {#invgauss}
+... also known as the *(Shifted) Wald*. It is not as "inverse" of the Gaussian as it sounds, and is a purely descriptive distribution. Read more on [Wikipedia](https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution)
+
+
+**Parameters:**
+
+ * $\mu$ (**difficulty**)
+ * $shape$ (**messy**)
+ * $shift$: time of earliest possible response. When $shift = 0$ it is a plain *Inverse Gaussian* or *Wald* distribution, i.e., only two parameters.
+
+Fit the (non-shifted) inverse Gaussian using `brms::brm(rt ~ 1, ..., family=inverse.gaussian()`.
+
+
+```{r, echo=FALSE}
+# Density and radnom generation for (Shifted) Inverse Gaussian / (Shifted) Wald.
+dshifted_inv_gaussian = function(x, mu, shape, shift) {
+  dens = dinv_gaussian(x - shift, mu, shape)
+  dens[is.na(dens)] = 0  # NaN means 0 density during shift.
+  dens
+}
+rshifted_inv_gaussian = function(n, mu, shape, shift) shift + dinv_gaussian(n, mu, shape)
+
+# Shiny!
+shinyApp(
+  fluidPage(
+    sidebarLayout(
+      # Sliders
+      sidebarPanel(
+        width=4,
+        sliderInput("sinvgauss_mu", label = NULL, pre='<i>&mu;</i> = ',
+                    min = 0, max = 2.5, value = 0.8, step = 0.01),
+        sliderInput('sinvgauss_shape', label = NULL, pre='shape = ',
+                    min = 0, max = 15, value = 4, step = 0.1),
+        sliderInput('sinvgauss_shift', label = NULL, pre='shift = ',
+                    min = 0, max = 2, value = 0, step = 0.01)
+      ),
+      
+      # Placeholder for histogram
+      mainPanel(width=8, plotOutput(outputId = "histogram", height='100%'))
+    )
+  ),
+  
+  # Render histogram on server
+  function(input, output) {
+    # Check every second whether global data was updated
+    pollData = reactivePoll(UPDATE_INTERVAL, session,
+      function() last_data_update,
+      function() ''
+    )
+    
+    # Render plot
+    output$histogram = renderPlot(height=FIG_HEIGHT, expr = {
+      pollData()  # Update plot if global data was changed
+      dfun = function(x) dshifted_inv_gaussian(x, input$sinvgauss_mu, input$sinvgauss_shape, input$sinvgauss_shift)
+      show_plot(input, dfun)
+    })
+  },
+  
+  options = list(height=590)
+)
+```
+
+
+
 ## Skew normal {#skew}
 Adds a skew to the normal (Gaussian) distribution via an extra skew-parameter. In my experience, it usually has a poorer fit to reaction times, though it is superior to the Gaussian.
 
@@ -555,7 +568,7 @@ shinyApp(
         sliderInput("skew_mu", label = NULL, pre='<i>&mu;</i> = ',
                     min = 0, max = 3, value = 1, step = 0.01),
         sliderInput('skew_sigma', label = NULL, pre='<i>&sigma;</i> = ',
-                    min = 0, max = 1, step = 0.01, value = 0.3),
+                    min = 0, max = 1.5, step = 0.01, value = 0.3),
         sliderInput('skew_alpha', label = NULL, pre='<i>&alpha;</i> = ',
                     min = -15, max = 15, step = 0.1, value = 3.5)
       ),
@@ -592,7 +605,7 @@ The gamma distribution is so important in statistics, that it probably spilled o
 
 **Parameters:**
 
-Both parameters in isolation are **trunk**-like so their interaction determines **scale** and **location**. I think that this makes them **messy**.
+Both parameters in isolation are **difficulty**-like so their interaction determines **scale** and **location**. I think that this makes them **messy**.
 
  * $shape$ (**messy**)
  * $rate$ (**messy**)
@@ -667,7 +680,7 @@ shinyApp(
         sliderInput("sweibull_shape", label = NULL, pre='shape = ',
                     min = 0, max = 10, value = 2.2, step = 0.1),
         sliderInput('sweibull_scale', label = NULL, pre='scale = ',
-                    min = 0, max = 2, value = 0.5, step = 0.01),
+                    min = 0, max = 2.5, value = 0.5, step = 0.01),
         sliderInput('sweibull_shift', label = NULL, pre='shift = ',
                     min = 0, max = 2, value = 0, step = 0.01)
       ),
