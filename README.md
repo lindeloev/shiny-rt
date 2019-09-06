@@ -1,0 +1,2 @@
+# Reaction Time Distributions - An Interactive Overview
+This is the code underlying [this guide](http://lindeloev.net/shiny_rt). It needs to run on a shiny server. I set up a free one at Google Cloud, which host it right now. The file `index.html` is hosted locally at lindeloev.net to make Twitter Cards etc. work.

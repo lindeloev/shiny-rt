@@ -3,3 +3,4 @@ delete
 .RData
 .Rhistory
 shiny_rt.Rproj
+rsconnect
