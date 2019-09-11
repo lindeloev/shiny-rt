@@ -24,9 +24,7 @@ issues with:
 These issue do not apply to shinyapps.io or when running locally.
 
 
-TO DO NOW:
- * Update everything: cheat sheet, shiny server files, and GitHub.
- 
+
 TO DO for later and probably never...
    *  add brms families for shifted Weibull and shifted Wald
    * (Minor) The dataset selector does not update the trims and bin values when these are set in update_data
@@ -225,7 +223,7 @@ So I've inserted styles manually. Ugly. -->
 
 
 
-All too often, researchers use the normal distribution to model reaction times. I made this document to lower the burden of shifting to better distributions. Because the normal distribution is so poor for RTs, the reward of shifting will be great! 
+All too often, researchers use the normal distribution to model reaction times. Hopefully, this document to lower the burden of shifting to better distributions. Because the normal distribution is so poor for RTs (as you will see), the reward of shifting will be great! 
 
 The cheat sheet below gives an overview (get it in [PNG](https://github.com/lindeloev/shiny-rt/raw/master/rt_cheat_sheet.png) or [PDF](https://github.com/lindeloev/shiny-rt/raw/master/rt_cheat_sheet.pdf)). You can also skip straight to the  [interactive part](#data) or to the [applied code example](#code).
 
@@ -236,11 +234,12 @@ The cheat sheet below gives an overview (get it in [PNG](https://github.com/lind
 
 
 # Opinion: Three important types of parameters
-For reaction times, I'll argue that there are three useful parameters to describe their distribution: Difficulty^["Difficulty" is a term borrowed from [Wagenmakers & Brown (2007)](http://ejwagenmakers.com/2007/WagenmakersBrown2007.pdf), but it is not standard], Onset^[Some distributions are parameterized using *rate* which is the inverse of *location center*.], and Scale.^[Many distributions include a *shape* parameter, but since all RT distributions have approximately the same shape, I'd rather pick a distribution which inherently has the "right" shape, than model this using a parameter.] Here, the blue curves show the effect of *increasing* each of these parameters. [Try manipulating them yourself here](#slog).
+For reaction times, I'll argue that there are three useful parameters to describe their distribution: Difficulty^["Difficulty" is a term borrowed from [Wagenmakers & Brown (2007)](http://ejwagenmakers.com/2007/WagenmakersBrown2007.pdf), but it is not standard], Onset^[Some distributions are parameterized using *rate* which is the inverse of *location center*.], and Scale.^[Many distributions include a *shape* parameter, but since all RT distributions have approximately the same shape, I'd rather pick a distribution which inherently has the "right" shape, than model this using a parameter.] In the figure below, the blue curves show the effect of *increasing* each of these parameters. [Try manipulating them yourself here](#slog).
 
 <br />
 
-<!-- The image below was generated using this code, which is currently disabled using eval=FALSE -->
+
+<!-- The image was generated using this code, which is currently disabled using eval=FALSE -->
 ```{r, eval=F, echo=F, out.width= "100%", fig.height=1.3}
 # Function to make a plot with 1-5 shifted log-normal curves, 
 # depending on the length of mu, sigma, etc.
@@ -275,14 +274,14 @@ par(mfrow = c(1, 1))
 
 
 ## Difficulty
-A dominant feature of RTs is that the standard deviation increases approximately linearly with the mean [(Wagenmakers et al., 2007)](http://ejwagenmakers.com/2007/WagenmakersBrown2007.pdf). Reaction times are more dispersed for conditions with longer reaction times (e.g., incongruent trials) and are more condensed for conditions with shorter reaction times (e.g., congruent trials). For interpretability, it is convenient to have one parameter that changes both rather than having to regress on each separately and always interpret their interaction. Ideally, the value of the difficulty parameter should be somewhere around the **center** (highest density region, e.g., the median RT or the mode RT).
+A dominant feature of RTs is that the standard deviation increases approximately linearly with the mean [(Wagenmakers et al., 2007)](http://ejwagenmakers.com/2007/WagenmakersBrown2007.pdf). Reaction times are more dispersed for conditions with longer reaction times (e.g., incongruent trials) and are more condensed for conditions with shorter reaction times (e.g., congruent trials). For interpretability, it is convenient to have one parameter that changes both rather than having to regress on mean and SD separately and always interpret their interaction. Ideally, the value of the difficulty parameter should be somewhere around the **center** (highest density region, e.g., the median RT or the mode RT).
 
 
 
 ## Location onset and center
 Moves the whole distribution towards the left (longer RTs) or right (shorter RTs) without altering its shape.
 
-  1. **Onset:** This is the earliest possible reaction time (for descriptive models) or the earliest possible start of the decision process (for mechanistic models where it's called **non-decision time**). In humans, this is often around 200 ms. It's good to have an onset-parameter since no animal can perceive or respond in 0.0 ms. Models without an onset-parameter often  predict positive probabilities of impossibly short RTs.
+  1. **Onset:** This is the earliest possible reaction time (for descriptive models where it's often called **shift**) or the earliest possible start of the decision process (for mechanistic models where it's called **non-decision time**). In humans, this is often around 200 ms. It's good to have an onset-parameter since no animal can perceive or respond in 0.0 ms. Models without an onset-parameter often predict positive probabilities of impossibly short RTs.
   2. **Center:** Somewhere "in the middle" of the distribution (e.g., $\mu$ in the normal distribution). I argued above that we should prefer a **difficulty**-like parameter to model the center.
 
 
@@ -293,13 +292,13 @@ Stretches or squeezes the distribution over and above **difficulty**, without (s
 
 
 ## Which distribution is better?
-It is nice when each parameter does only one thing. If they do several things at once, or if multiple parameters do the *same* thing, I call them **messy**, because you will need to tune many parameters to achieve one of the above effects. And that's a mess for interpretability. However, if this behavior is justified by theory, I call them **mechanism** parameters.
+It is nice when each parameter does only one thing. If they do several things at once, or if multiple parameters do the *same* thing, I call them **messy**, because you will need to tune many parameters to achieve one of the above effects. And that's a mess for interpretability. However, if this behavior at the surface level is justified by an underlying theory that gives meaning to each parameter, I call them **mechanism** parameters.
 
 With this terminology on the table, here are our three commandments:
 
 > 1. Bad: Distributions with messy parameters.
-> 2. Good: Distributions with mechanism parameters.
 > 3. Good: Distributions with an onset, a difficulty, AND a scale parameter.
+> 2. Good: Distributions with mechanism parameters.
 
 According to these criteria, [DDM](#wiener), [LBA](#lba), the [shifted log-normal](#slog), and the [inverse Gaussian](#invgauss) are the winners on this list. If we also consider how easy it is to interpret the parameter values, I'd say that [DDM](#wiener) and the [shifted log-normal](#slog) come out on top, but this is up for discussion.
 
@@ -403,19 +402,23 @@ output$plot_select = renderPlot(height=FIG_HEIGHT, expr = {
 Here are some fun challenges:
 
  * **One-parameter champ:** For the speed/accuracy and MRT data, try (1) fitting the parameters to one dataset, (2) change the dataset, (3) see how close you can get by *only changing one parameter now*.
+ 
  * **Fit champ:** There is a special reward if you can fit the data so well that the [mean squared error (MSE)](https://en.wikipedia.org/wiki/Mean_squared_error) drops below 40. Use the keyboard arrows to fine-tune parameters. The MSE in the plots is multiplied by 10.000 to give easy-to-read numbers.
+ 
  * **Optimal champ:** Use [`brms`](https://github.com/paul-buerkner/brms) to find the optimal fits as shown in the code snippets. The empirical datasets are in the `rtdists` package. Use `library(rtdists'); data('rr98'); data('speed_acc')` to load them. <a href="https://raw.githubusercontent.com/lindeloev/shiny-rt/master/mrt_data.csv" download>Download the MRT data here</a>. You can also try and use the (frequentist) [`gamlss` package](https://www.gamlss.com/), though it's harder to interpret the results.
 
 
 <br /><br />
 
 ## Gaussian (normal distribution) {#gauss}
-Models responses from a single mean with a symmetrical dispersion towards faster and slower RTs. In most cases, the normal distribution is the worst distribution to fit reaction times. For example, for typical reaction times, your fitted model will predict that more than 5% of the reaction times will be *negative*! Yet, the Gaussian is by far the most frequently used analysis of reaction times because it is the default in most statistical tests, packages, and software. For example, t-tests, ANOVA, linear regression, `lm`, `lme4::lmer`, and `brms::brm`. Also, if your pre-processing includes computing means for each participant or condition and you use *those* means as data, you've subscribed to the Gaussian model (and thrown away a lot of wonderful data).
+Models responses from a single mean with a symmetrical dispersion towards faster and slower RTs. In most cases, the normal distribution is the worst distribution to fit reaction times. For example, for typical reaction times, your fitted model will predict that more than 5% of the reaction times will be *faster* than the fastest RT ever recorded! 
+
+Yet, the Gaussian is by far the most frequently used analysis of reaction times because it is the default in most statistical tests, packages, and software. For example, t-tests, ANOVA, linear regression, `lm`, `lme4::lmer`, and `brms::brm`. Also, if your pre-processing includes computing means for each participant or condition and you use *those* means as data, you've subscribed to the Gaussian model (and thrown away a lot of wonderful data).
 
 
 **Parameters**
 
- * $\mu$ (**center**): the mean.
+ * $\mu$ (**center**): the mean. It is heavily affected by the tail.
  * $\sigma$ (**scale**): the standard deviation. This models (symmetric) variability in RTs.
 
 
@@ -429,7 +432,6 @@ fit = brm(rt ~ condition, rt_data, family=gaussian())
 
 <hr />
 
-<!---- TESTING ---->
 ```{r, echo=FALSE}
 shinyApp(
   ui = fluidPage(
@@ -467,39 +469,6 @@ shinyApp(
   options = list(height=520)
 )
 ```
-
-
-```{r, echo=FALSE, eval=FALSE}
-sidebarLayout(
-  sidebarPanel(
-    sliderInput("gauss_mu", label = NULL, pre='<i>&mu;</i> = ',
-                min = 0, max = 3, value = 1, step = 0.01),
-    sliderInput('gauss_sigma', label = NULL, pre='<i>&sigma;</i> = ',
-                min = 0, max = 1.5, step = 0.01, value = 0.4)
-  ),
-  
-  # Placeholder for histogram
-  mainPanel(
-    plotOutput(outputId = "histogram", width='100%', height='100%')
-  )
-)
-```
-
-
-```{r, context="server", echo=FALSE, eval=FALSE}
-pollData = reactivePoll(UPDATE_INTERVAL, session,
-  function() last_data_update,
-  function() ''
-)
-
-# Render
-output$histogram = renderPlot(height=FIG_HEIGHT, expr = {
-  pollData()  # Update plot if global data was changed
-  dfun = function(x) dnorm(x, input$gauss_mu, input$gauss_sigma)
-  show_plot(input, dfun)
-})
-```
-
 
 
 
@@ -567,6 +536,7 @@ shinyApp(
 
 ## Skew normal {#skew}
 Adds a skew to the normal (Gaussian) distribution via an extra skew-parameter. In my experience, it usually has a poorer fit to reaction times, though it is superior to the Gaussian.
+
 
 **Parameters:**
 
@@ -1075,6 +1045,7 @@ data = speed_acc %>%
   filter(response != 'error', stim_cat == response) # Only correct responses
 ```
 
+
 Now we use the [shifted log-normal](#slog) to ask: "Does median RT differ by condition?". In other words, we model $\mu$ here, leaving the scale $\sigma$ and the onset $shift$ fixed. We include a random intercept per participant, but [see my notes on formulas for RT models](#models). In this example, it takes some time to run it because we have around 28.000 data points.
 ```{r, eval=FALSE}
 library(brms)
@@ -1084,7 +1055,9 @@ fit = brm(formula = rt ~ condition + (1|id),
           file = 'fit_slog')  # Save all that hard work.
 ```
 
+Done!
 
+## Checking the fit
 Much like the interactive applets above, we can see how the parameters predict the actual data:
 
 ```{r, eval=FALSE}
@@ -1099,9 +1072,8 @@ pp_check(fit)  # Posterior predictive check
 This is *much* better than a Gaussian. But there's room for improvement. Mostly because $shift$ is close to the earliest rt *in the whole dataset*, which for one participant (id #8) in one condition was 0.18 - just above the trim. The mean shortest rt was 0.28 seconds so that participant is not representative. Setting one $shift$ per participant would make more sense: 
 
 ```{r, eval = FALSE}
-formula = bf(
-  rt ~ condition + (1|id), 
-  ndt ~ id)
+formula = bf(rt ~ condition + (1|id), 
+             ndt ~ id)
 ```
 
 
@@ -1115,6 +1087,8 @@ data %>%
 ```
 
 
+
+## Understanding the parameter estimates
 Leaving that aside, let's see what we learned about the parameters of the shifted log-normal model. `Intercept` and `conditionspeed` together define $\mu$ (the difficulty). You can see `sigma` (the scale) and `ndt` (the onset) too, so we have posteriors for all of our three parameters!
 
 ```{r, eval=FALSE}
@@ -1150,7 +1124,7 @@ hypothesis(fit, 'conditionspeed < 0')  # Numerically
 ```
 
 
-
+## Priors and descriptives
 I cut corners here for the sake of brevity. Instead of going with the default priors, I would have specified something sensible and run `brm(..., prior=prior)`. Mostly as [regularization](https://en.wikipedia.org/wiki/Regularization_(mathematics)). There is so much data that most priors will be overwhelmed.
 
 ```{r, eval=FALSE}
