@@ -12,62 +12,28 @@ output:
 runtime: shiny
 ---
 
-<!-- CSS styles -->
-<link rel="stylesheet" type="text/css" href="include/style.css">
-
-<!-- VIsible meta-data -->
-By Jonas Kristoffer Lindeløv ([blog](https://lindeloev.net), [profile](https://vbn.aau.dk/da/persons/117060)).<br />
-Updated: `r format(Sys.time(), '%d %B, %Y')` ([source](https://github.com/lindeloev/shiny-rt/), [changes](https://github.com/lindeloev/shiny-rt/commits/master)).
-
-
-
-<!-- Social sharing. From simplesharebuttons.com -->
-<style type="text/css">
-  #share-buttons img {
-    width: 40px;
-    padding-right: 15px; vertical-align: top;
-    border: 0;
-    box-shadow: 0;
-    display: inline;
-    vertical-align: top;
-  }
-</style>
+<!-- 
+For everyone looking here: setting up my own shiny server caused major
+issues with:
+ 
+ * Hash links (anchors) do not work.
+ * The content does not float below the TOC on narrow screens (mobile).
+ * Files cannot be served via shiny, so I have to link to the GitHub folder.
+ * No HTTPS certificate, so could not host index.html at lindeloev.github.io.
+ 
+These issue do not apply to shinyapps.io or when running locally.
 
 
-
-<!-- For some reason, the code below ignores this style. 
-So I've inserted styles manually. Ugly. -->
-<div id="share-buttons">
-  <!-- Twitter -->
-  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-  <a href="https://twitter.com/intent/tweet?text=Reaction time distributions: an interactive overview https://lindeloev.net/shiny_rt/" class="twitter-hashtag-button" data-size="large" data-related="jonaslindeloev" data-show-count="false">Share on Twitter</a>
-  &nbsp;&nbsp;&nbsp;
-  <!-- Facebook -->
-  <a href="http://www.facebook.com/sharer.php?u=https://lindeloev.net/shiny_rt/" target="_blank"><img src="https://simplesharebuttons.com/images/somacro/facebook.png" style="width: 40px; padding-right: 10px; vertical-align: top;" alt="Facebook" /></a>
-  <!-- LinkedIn -->
-  <a href="http://www.linkedin.com/shareArticle?mini=true&amp;url=https://lindeloev.net/shiny_rt/" target="_blank"><img src="https://simplesharebuttons.com/images/somacro/linkedin.png" style="width: 40px; padding-right: 10px; vertical-align: top;" alt="LinkedIn" /></a>
-  <!-- Digg -->
-  <a href="http://www.digg.com/submit?url=https://lindeloev.net/shiny_rt/" target="_blank"><img src="https://simplesharebuttons.com/images/somacro/diggit.png" style="width: 40px; padding-right: 10px; vertical-align: top;" alt="Digg" /></a>
-  <!-- Reddit -->
-  <a href="http://reddit.com/submit?url=https://lindeloev.net/shiny_rt/&amp;title=Reaction time distributions: an interactive overview" target="_blank"><img src="https://simplesharebuttons.com/images/somacro/reddit.png" style="width: 40px; padding-right: 10px; vertical-align: top;" alt="Reddit" /></a>
-  <!-- Email -->
-  <a href="mailto:?Subject=Reaction time distributions: an interactive overview&amp;Body=https://lindeloev.net/shiny_rt/"><img src="https://simplesharebuttons.com/images/somacro/email.png" style="width: 40px; padding-right: 10px; vertical-align: top;" alt="Email" /></a>
-</div>
-
-
-<br />
-
-<!--
 TO DO NOW:
  * Update everything: cheat sheet, shiny server files, and GitHub.
- * Move to GitHub instead of lindeloev.net
- * Server problem: Make the links work inside the iframe and the menu should float top.
-
- * ANALYSIS AND PLOT:
-   * For later and probably not...: add brms families for shifted Weibull and shifted Wald
+ 
+TO DO for later and probably never...
+   *  add brms families for shifted Weibull and shifted Wald
    * (Minor) The dataset selector does not update the trims and bin values when these are set in update_data
-
+   * Server problem: Make the links work inside the iframe and the menu should float top.
 -->
+
+
 
 ```{r, context="setup", echo=FALSE, message=FALSE, warning=FALSE}
 # # Uncomment if you haven't got these packages yet:
@@ -210,13 +176,62 @@ update_data = function(rt_type) {
 ```
 
 
+
+
+<!-- CSS styles -->
+<link rel="stylesheet" type="text/css" href="include/style.css">
+
+<!-- VIsible meta-data -->
+By Jonas Kristoffer Lindeløv ([blog](https://lindeloev.net), [profile](https://vbn.aau.dk/da/persons/117060)).<br />
+Updated: `r format(Sys.time(), '%d %B, %Y')` ([source](https://github.com/lindeloev/shiny-rt/), [changes](https://github.com/lindeloev/shiny-rt/commits/master)).
+
+
+
+<!-- Social sharing. From simplesharebuttons.com -->
+<style type="text/css">
+  #share-buttons img {
+    width: 40px;
+    padding-right: 15px; vertical-align: top;
+    border: 0;
+    box-shadow: 0;
+    display: inline;
+    vertical-align: top;
+  }
+</style>
+
+
+
+<!-- For some reason, the code below ignores this style. 
+So I've inserted styles manually. Ugly. -->
+<div id="share-buttons">
+  <!-- Twitter -->
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+  <a href="https://twitter.com/intent/tweet?text=Reaction time distributions: an interactive overview https://lindeloev.net/shiny/rt/" class="twitter-hashtag-button" data-size="large" data-related="jonaslindeloev" data-show-count="false">Share on Twitter</a>
+  &nbsp;&nbsp;&nbsp;
+  <!-- Facebook -->
+  <a href="http://www.facebook.com/sharer.php?u=https://lindeloev.net/shiny/rt/" target="_blank"><img src="https://simplesharebuttons.com/images/somacro/facebook.png" style="width: 40px; padding-right: 10px; vertical-align: top;" alt="Facebook" /></a>
+  <!-- LinkedIn -->
+  <a href="http://www.linkedin.com/shareArticle?mini=true&amp;url=https://lindeloev.net/shiny/rt/" target="_blank"><img src="https://simplesharebuttons.com/images/somacro/linkedin.png" style="width: 40px; padding-right: 10px; vertical-align: top;" alt="LinkedIn" /></a>
+  <!-- Digg -->
+  <a href="http://www.digg.com/submit?url=https://lindeloev.net/shiny/rt/" target="_blank"><img src="https://simplesharebuttons.com/images/somacro/diggit.png" style="width: 40px; padding-right: 10px; vertical-align: top;" alt="Digg" /></a>
+  <!-- Reddit -->
+  <a href="http://reddit.com/submit?url=https://lindeloev.net/shiny/rt/&amp;title=Reaction time distributions: an interactive overview" target="_blank"><img src="https://simplesharebuttons.com/images/somacro/reddit.png" style="width: 40px; padding-right: 10px; vertical-align: top;" alt="Reddit" /></a>
+  <!-- Email -->
+  <a href="mailto:?Subject=Reaction time distributions: an interactive overview&amp;Body=https://lindeloev.net/shiny/rt/"><img src="https://simplesharebuttons.com/images/somacro/email.png" style="width: 40px; padding-right: 10px; vertical-align: top;" alt="Email" /></a>
+</div>
+
+
+<br />
+
+
+
 All too often, researchers use the normal distribution to model reaction times. I made this document to lower the burden of shifting to better distributions. Because the normal distribution is so poor for RTs, the reward of shifting will be great! 
 
-The cheat sheet below gives an overview (get it in [PNG](http://github.com/lindeloev/shiny-rt/rt_cheat_sheet.png) or [PDF](http://github.com/lindeloev/shiny-rt/rt_cheat_sheet.pdf)). You can also skip straight to the  [interactive part](#data) or to the [applied code example](#code).
+The cheat sheet below gives an overview (get it in [PNG](https://github.com/lindeloev/shiny-rt/raw/master/rt_cheat_sheet.png) or [PDF](https://github.com/lindeloev/shiny-rt/raw/master/rt_cheat_sheet.pdf)). You can also skip straight to the  [interactive part](#data) or to the [applied code example](#code).
 
 
 <hr />
-[![](rt_cheat_sheet.png)](http://github.com/lindeloev/shiny-rt/rt_cheat_sheet.pdf)
+[![](rt_cheat_sheet.png)](https://github.com/lindeloev/shiny-rt/raw/master/rt_cheat_sheet.pdf)
 <hr />
 
 
