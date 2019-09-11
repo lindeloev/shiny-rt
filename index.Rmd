@@ -164,7 +164,7 @@ update_data = function(rt_type) {
     
   # But one can also insert one's own data:
   } else if(is.numeric(rt_type)) {
-    rt_data = rt_type
+    rt_data = rt_type[1:min(NSAMPLES, length(rt_type))]  # A max on data length
   }
   
   # Make sure that it stays within bounds, and assign to global scope
@@ -359,7 +359,7 @@ shinyApp(
 ```{r, echo=FALSE}
 # Select or input data
 selectInput('rt_type', label = 'Choose a dataset:', choices = rt_types, selected = 'accuracy', width = '100%')
-textInput('rts_input', label = '... or paste your own RTs:', width='100%')
+textInput('rts_input', label = '... or paste your own RTs (seperator = space/,/;/tab):', width='100%')
 
 # Trim on one line
 div(style="display: inline-block; vertical-align:top;", numericInput('trim_min', label = 'Min RT', value=TRIM_MIN, min=0, max=10, step=0.1, width='80px'))
