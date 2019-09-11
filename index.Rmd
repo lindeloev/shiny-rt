@@ -34,6 +34,7 @@ Updated: `r format(Sys.time(), '%d %B, %Y')` ([source](https://github.com/lindel
 </style>
 
 
+
 <!-- For some reason, the code below ignores this style. 
 So I've inserted styles manually. Ugly. -->
 <div id="share-buttons">
@@ -58,8 +59,9 @@ So I've inserted styles manually. Ugly. -->
 
 <!--
 TO DO NOW:
- * Add cheat sheet to "evaluation" section.
- * Update on shiny server
+ * Update everything: cheat sheet, shiny server files, and GitHub.
+ * Move to GitHub instead of lindeloev.net
+ * Server problem: Make the links work inside the iframe and the menu should float top.
 
  * ANALYSIS AND PLOT:
    * For later and probably not...: add brms families for shifted Weibull and shifted Wald
@@ -67,16 +69,15 @@ TO DO NOW:
 
 -->
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, context="setup", echo=FALSE, message=FALSE, warning=FALSE}
 # # Uncomment if you haven't got these packages yet:
 # install.packages('brms')
-# install.packages('RWiener')
+# install.packages('RWiener')  # For dwiener
 # install.packages('shiny')
 # install.packages('rtdists')
 
 # Import stuff
 library(shiny)
-library(RWiener)  # For dwiener
 library(rtdists)  # For dLBA
 
 # I had problems installing brms on Google Cloud, so I did a manual replacement:
@@ -140,7 +141,7 @@ show_plot = function(input, dfun = NULL) {
 
 
 <!-- Generate datasets -->
-```{r, echo=FALSE}
+```{r, context="setup", echo=FALSE}
 data("rr98")
 data("speed_acc")
 mrt_data = read.csv('mrt_data.csv')
@@ -209,13 +210,18 @@ update_data = function(rt_type) {
 ```
 
 
-All too often, researchers use the normal distribution to model reaction times. I can understand this. Changing carries with it the cognitive burden of having to learn something new, and statistics is hard. I made this document to lower this burden by helping intuition along and providing copy-and-paste ready code examples.
+All too often, researchers use the normal distribution to model reaction times. I made this document to lower the burden of shifting to better distributions. Because the normal distribution is so poor for RTs, the reward of shifting will be great! 
 
-Because the normal distribution is so bad for RTs, the reward of shifting will be great! [Go to the interactive part](#data) or [an applied code example](#code). Read on for some background.
+The cheat sheet below gives an overview (get it in [PNG](http://github.com/lindeloev/shiny-rt/rt_cheat_sheet.png) or [PDF](http://github.com/lindeloev/shiny-rt/rt_cheat_sheet.pdf)). You can also skip straight to the  [interactive part](#data) or to the [applied code example](#code).
+
+
+<hr />
+[![](rt_cheat_sheet.png)](http://github.com/lindeloev/shiny-rt/rt_cheat_sheet.pdf)
+<hr />
 
 
 # Opinion: Three important types of parameters
-For reaction times, I'll argue that there are three useful parameters to describe their distribution: difficulty^["Difficulty" is a term borrowed from [Wagenmakers & Brown (2007)](http://ejwagenmakers.com/2007/WagenmakersBrown2007.pdf), but it is not standard], location shift^[Some distributions are parameterized using *rate* which is the inverse of *location center*.], and scale.^[Many distributions include a *shape* parameter, but since all RT distributions have approximately the same shape, I'd rather pick a distribution which inherently has the "right" shape, than model this using a parameter.] Here, the blue curves show the effect of *increasing* each of these parameters. [Try changing them yourself here](#slog).
+For reaction times, I'll argue that there are three useful parameters to describe their distribution: Difficulty^["Difficulty" is a term borrowed from [Wagenmakers & Brown (2007)](http://ejwagenmakers.com/2007/WagenmakersBrown2007.pdf), but it is not standard], Onset^[Some distributions are parameterized using *rate* which is the inverse of *location center*.], and Scale.^[Many distributions include a *shape* parameter, but since all RT distributions have approximately the same shape, I'd rather pick a distribution which inherently has the "right" shape, than model this using a parameter.] Here, the blue curves show the effect of *increasing* each of these parameters. [Try manipulating them yourself here](#slog).
 
 <br />
 
@@ -258,11 +264,11 @@ A dominant feature of RTs is that the standard deviation increases approximately
 
 
 
-## Location shift and center
+## Location onset and center
 Moves the whole distribution towards the left (longer RTs) or right (shorter RTs) without altering its shape.
 
-  1. **Location shift:** Sometimes called **non-decision time**, is the earliest possible reaction time. Often, this is around 200 ms. It's good to have a shift-parameter since no animal can perceive or respond in 0.0 ms. Models without a shift parameter often end up predicting positive probabilities of impossibly short RTs. 
-  2. **Location center:** Somewhere "in the middle" of the distribution (e.g., $\mu$ in the normal distribution). I argued above that we should prefer a **difficulty**-like parameter to model the center.
+  1. **Onset:** This is the earliest possible reaction time (for descriptive models) or the earliest possible start of the decision process (for mechanistic models where it's called **non-decision time**). In humans, this is often around 200 ms. It's good to have an onset-parameter since no animal can perceive or respond in 0.0 ms. Models without an onset-parameter often  predict positive probabilities of impossibly short RTs.
+  2. **Center:** Somewhere "in the middle" of the distribution (e.g., $\mu$ in the normal distribution). I argued above that we should prefer a **difficulty**-like parameter to model the center.
 
 
 
@@ -278,7 +284,7 @@ With this terminology on the table, here are our three commandments:
 
 > 1. Bad: Distributions with messy parameters.
 > 2. Good: Distributions with mechanism parameters.
-> 3. Good: Distributions with a difficulty, a location shift, AND a scale parameter.
+> 3. Good: Distributions with an onset, a difficulty, AND a scale parameter.
 
 According to these criteria, [DDM](#wiener), [LBA](#lba), the [shifted log-normal](#slog), and the [inverse Gaussian](#invgauss) are the winners on this list. If we also consider how easy it is to interpret the parameter values, I'd say that [DDM](#wiener) and the [shifted log-normal](#slog) come out on top, but this is up for discussion.
 
@@ -287,13 +293,14 @@ According to these criteria, [DDM](#wiener), [LBA](#lba), the [shifted log-norma
 # Select data {#data}
 All of the following datasets are from a single participant in a single condition.
 
-```{r, echo=FALSE}
+<!--- TESTING --->
+```{r, echo=FALSE, eval=FALSE}
 shinyApp(
   ui = fluidPage(
     # Select or input data
     fluidRow(
       column(7, selectInput('rt_type', label = 'Choose a dataset:', choices = rt_types, selected = 'accuracy', width = '100%')),
-      column(5, textInput('rts_input', label = '... or paste your own RTs:', width='100%'))
+      column(5, textInput('rts_input', label = '... or paste your own RTs (separator = space/,/;/tab)):', width='100%'))
     ),
     
     # Trim on one line
@@ -335,6 +342,46 @@ shinyApp(
 ```
 
 
+```{r, echo=FALSE}
+# Select or input data
+selectInput('rt_type', label = 'Choose a dataset:', choices = rt_types, selected = 'accuracy', width = '100%')
+textInput('rts_input', label = '... or paste your own RTs:', width='100%')
+
+# Trim on one line
+div(style="display: inline-block; vertical-align:top;", numericInput('trim_min', label = 'Min RT', value=TRIM_MIN, min=0, max=10, step=0.1, width='80px'))
+div(style="display: inline-block; vertical-align:top;", numericInput('trim_max', label = 'Max RT', value=TRIM_MAX, min=0, max=10, step=0.1, width='80px'))
+div(style="display: inline-block; vertical-align:top;", numericInput('bins', label = 'Bins', value=BINS, min=2, max=1000, step=10, width='80px'))
+```
+
+
+```{r, echo=FALSE}
+# Placeholder for histogram
+plotOutput('plot_select', height='100%')
+```
+
+```{r, context="server", echo=FALSE}
+output$plot_select = renderPlot(height=FIG_HEIGHT, expr = {
+  TRIM_MIN <<- input$trim_min
+  TRIM_MAX <<- input$trim_max
+  BINS <<- input$bins
+  
+  # If custom data has been pasted, parse it to a numeric vector.
+  if(input$rts_input != '') {
+    update_data(rt_type = as.numeric(strsplit(input$rts_input, '[;,\t ]+')[[1]]))  # Splot by semi-colon, comma, tab, and space
+  }
+  
+  # Else just set data by label
+  else {
+    update_data(rt_type = input$rt_type)
+  }
+  
+  # Finally! Show the plot
+  show_plot(input)
+})
+```
+
+
+
 
 
 # Drag those sliders!
@@ -367,8 +414,8 @@ fit = brm(rt ~ condition, rt_data, family=gaussian())
 
 <hr />
 
+<!---- TESTING ---->
 ```{r, echo=FALSE}
-gauss_i = 0
 shinyApp(
   ui = fluidPage(
     sidebarLayout(
@@ -396,8 +443,6 @@ shinyApp(
     
     # Render
     output$histogram = renderPlot(height=FIG_HEIGHT, expr = {
-      gauss_i <<- gauss_i + 1
-      print(gauss_i)
       pollData()  # Update plot if global data was changed
       dfun = function(x) dnorm(x, input$gauss_mu, input$gauss_sigma)
       show_plot(input, dfun)
@@ -407,6 +452,39 @@ shinyApp(
   options = list(height=520)
 )
 ```
+
+
+```{r, echo=FALSE, eval=FALSE}
+sidebarLayout(
+  sidebarPanel(
+    sliderInput("gauss_mu", label = NULL, pre='<i>&mu;</i> = ',
+                min = 0, max = 3, value = 1, step = 0.01),
+    sliderInput('gauss_sigma', label = NULL, pre='<i>&sigma;</i> = ',
+                min = 0, max = 1.5, step = 0.01, value = 0.4)
+  ),
+  
+  # Placeholder for histogram
+  mainPanel(
+    plotOutput(outputId = "histogram", width='100%', height='100%')
+  )
+)
+```
+
+
+```{r, context="server", echo=FALSE, eval=FALSE}
+pollData = reactivePoll(UPDATE_INTERVAL, session,
+  function() last_data_update,
+  function() ''
+)
+
+# Render
+output$histogram = renderPlot(height=FIG_HEIGHT, expr = {
+  pollData()  # Update plot if global data was changed
+  dfun = function(x) dnorm(x, input$gauss_mu, input$gauss_sigma)
+  show_plot(input, dfun)
+})
+```
+
 
 
 
@@ -614,7 +692,7 @@ In other words, if you have time on the x-axis and start a lot of walkers at $t_
 
  * $\mu$ (**difficulty**): The mean. Notice that this will be heavily influenced by long RTs.
  * $\lambda$ (**scale**): Decreases the variance but is harder to intepret since $\sigma = \sqrt{(\mu^3/\lambda)}$.
- * $shift$ (**shift**): time of earliest possible response. When $shift = 0$ it is a plain *Inverse Gaussian* or *Wald* distribution, i.e., only two parameters.
+ * $shift$ (**onset**): time of earliest possible response. When $shift = 0$ it is a plain *Inverse Gaussian* or *Wald* distribution, i.e., only two parameters.
 
 
 
@@ -692,7 +770,7 @@ The diffusion idea also underlies the [inverse Gaussian](#invgauss) and the [LBA
 All of these are mechanism-like
 
  * $\alpha$ (**difficulty**): Boundary separation. The distance between thresholds. Longer distance --> more varied paths --> dispersed RTs.
- * $\tau$ (**shift**): Non-decision time (ndt). The time at which the random walker starts.
+ * $\tau$ (**onset**): Non-decision time (ndt). The time at which the random walker starts.
  * $\beta$ (**difficulty**): Bias. How close the walker starts to the upper threshold ($\beta = 0.5$ is in the middle). Higher = closer = faster and more condensed RTs.
  * $\delta$ (**difficulty**): Drift Rate. The speed of the walker. Higher --> faster and more condensed RTs.
 
@@ -757,9 +835,9 @@ This model has some resemblance to the [Wiener diffusion model](#wiener) in that
 All of these are mechanism-like:
 
 * $A$: upper bound of the starting point. The starting point is modeled as randomly drawn in this interval.
-* $b$: response threshold (usually, $b > A$).
+* $b$ (**difficulty**): response threshold (usually, $b > A$).
 * $t0$ (**shift**): the time before a "movement" is initiated, i.e., *non-decision time*.
-* $mean\_v$: the mean drift rate and it's variability (SD).
+* $mean\_v$ (**difficulty**): the mean drift rate and it's variability (SD).
 * $sd\_v$: the mean standard deviation of the drift rate and *its* variability (SD)
 
 Fit it using `glba::lba()`. There are some helpful distributions in the `rtdists` package.
@@ -904,7 +982,7 @@ shinyApp(
 
  * $\lambda$ (**difficulty**): It's called a scale parameter for some reason, but it affects the mean, median, and mode.
  * $k$ (**messy**): A shape parameter.
- * $shift$ (**shift**): when $shift = 0$, it's a straight-up *Weibull distribution* with the above two parameters.
+ * $shift$ (**onset**): when $shift = 0$, it's a straight-up *Weibull distribution* with the above two parameters.
 
 
 It is easy to infer the parameters of the (non-shifted) Weibull from data. Here, we model $\lambda$ by `condition`. It is log, so use `exp()` to back-transform. $k$ is fixed across conditions. See [notes on modeling](#models) and the [applied example](#code) for more details.
@@ -982,7 +1060,7 @@ data = speed_acc %>%
   filter(response != 'error', stim_cat == response) # Only correct responses
 ```
 
-Now we use the [shifted log-normal](#slog) to ask: "Does median RT differ by condition?". In other words, we model $\mu$ here, leaving $\sigma$ and $shift$ (ndt) fixed. We include a random intercept per participant, but [see my notes on formulas for RT models](#models). In this example, it takes some time to run it because we have around 28.000 data points.
+Now we use the [shifted log-normal](#slog) to ask: "Does median RT differ by condition?". In other words, we model $\mu$ here, leaving the scale $\sigma$ and the onset $shift$ fixed. We include a random intercept per participant, but [see my notes on formulas for RT models](#models). In this example, it takes some time to run it because we have around 28.000 data points.
 ```{r, eval=FALSE}
 library(brms)
 fit = brm(formula = rt ~ condition + (1|id),
@@ -1003,7 +1081,7 @@ pp_check(fit)  # Posterior predictive check
 
 
 
-This is *much* better than a Gaussian. But there's room for improvement. Mostly because $shift$ (ndt) is close to the earliest rt *in the whole dataset*, which for one participant in one condition was 0.18 - just above the trim. The mean shortest rt was 0.28 seconds so setting one $shift$ per participant would make more sense: 
+This is *much* better than a Gaussian. But there's room for improvement. Mostly because $shift$ is close to the earliest rt *in the whole dataset*, which for one participant (id #8) in one condition was 0.18 - just above the trim. The mean shortest rt was 0.28 seconds so that participant is not representative. Setting one $shift$ per participant would make more sense: 
 
 ```{r, eval = FALSE}
 formula = bf(
@@ -1022,7 +1100,7 @@ data %>%
 ```
 
 
-Leaving that aside, let's see what we learned about the parameters of the shifted log-normal model. `Intercept` and `conditionspeed` together define $\mu$. You can see `sigma` and `ndt` too, so we have posteriors for all of our three parameters!
+Leaving that aside, let's see what we learned about the parameters of the shifted log-normal model. `Intercept` and `conditionspeed` together define $\mu$ (the difficulty). You can see `sigma` (the scale) and `ndt` (the onset) too, so we have posteriors for all of our three parameters!
 
 ```{r, eval=FALSE}
 summary(fit)  # See parameters
@@ -1042,7 +1120,7 @@ ndt       0.17      0.00     0.17     0.18 1.00     1576     1724
 
 
 
-Because $\mu$ and $\sigma$ define the *log*-normal, they are on a log scale. This means that we expect a median RT of `exp(-0.69) = 0.50` seconds for condition "accuracy" (the intercept), and a median RT of `exp(-0.69 -0.40) = 0.34` seconds for condition "speed". If you get confused about these transformations, worry not. `brms` has you covered, no matter the distribution:
+Because $\mu$ and $\sigma$ define the *log*-normal distribution, they are on a log scale. This means that we expect a median RT of $ndt + exp(\mu) = 0.17 + exp(-0.69) = 0.50$ seconds for condition "accuracy" (the intercept), and a median RT of `exp(-0.69 -0.40) = 0.34` seconds for condition "speed". If you get confused about these transformations, worry not. `brms` has you covered, no matter the distribution:
 
 ```{r, eval=FALSE}
 marginal_effects(fit)  # Back-transformed parameter estimates
