@@ -204,7 +204,7 @@ So I've inserted styles manually. Ugly. -->
 <div id="share-buttons">
   <!-- Twitter -->
   <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-  <a href="https://twitter.com/intent/tweet?text=Reaction time distributions: an interactive overview https://lindeloev.net/shiny/rt/" class="twitter-hashtag-button" data-size="large" data-related="jonaslindeloev" data-show-count="false">Share on Twitter</a>
+  <a href="https://twitter.com/intent/tweet?text=Reaction time distributions: an interactive overview https://lindeloev.net/shiny/rt/ via %40jonaslindeloev" class="twitter-hashtag-button" data-size="large" data-related="jonaslindeloev" data-show-count="false">Share on Twitter</a>
   &nbsp;&nbsp;&nbsp;
   <!-- Facebook -->
   <a href="http://www.facebook.com/sharer.php?u=https://lindeloev.net/shiny/rt/" target="_blank"><img src="https://simplesharebuttons.com/images/somacro/facebook.png" style="width: 40px; padding-right: 10px; vertical-align: top;" alt="Facebook" /></a>
