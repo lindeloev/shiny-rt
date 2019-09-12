@@ -367,7 +367,7 @@ renderPlot(height=FIG_HEIGHT, expr = {
 ```
 
 
-
+<div class="vertical_spacer"></div>
 
 
 
@@ -426,6 +426,10 @@ mainPanel(width=8,
 
 
 
+<div class="vertical_spacer"></div>
+
+
+
 ## Ex-gaussian {#exgauss}
 If you believe that responses were caused by a mix of two independent processes, (1) a [Gaussian](#gauss) and (2) a decaying exponential, the ex-gaussian is exactly this. Most people don't believe this but they use the ex-gaussian in a purely descriptive way because it usually has an excellent fit to RTs. See [Wikipedia](https://en.wikipedia.org/wiki/Exponentially_modified_Gaussian_distribution).
 
@@ -467,6 +471,10 @@ mainPanel(width=8,
   })
 )
 ```
+
+
+
+<div class="vertical_spacer"></div>
 
 
 
@@ -512,6 +520,9 @@ mainPanel(width=8,
 )
 ```
 
+
+
+<div class="vertical_spacer"></div>
 
 
 
@@ -561,6 +572,8 @@ mainPanel(width=8,
 ```
 
 
+
+<div class="vertical_spacer"></div>
 
 
 
@@ -613,6 +626,8 @@ mainPanel(width=8,
 
 
 
+<div class="vertical_spacer"></div>
+
 
 
 ## Wiener diffusion {#wiener}
@@ -660,6 +675,7 @@ mainPanel(width=8,
 
 
 
+<div class="vertical_spacer"></div>
 
 
 
@@ -723,9 +739,13 @@ mainPanel(width=8,
     show_plot(session$userData, dfun)
   })
 )
+
+
 ```
 
 
+
+<div class="vertical_spacer"></div>
 
 
 
@@ -771,6 +791,8 @@ mainPanel(width=8,
 
 
 
+<div class="vertical_spacer"></div>
+
 
 
 ## (Shifted) Weibull {#sweibull}
@@ -815,6 +837,9 @@ mainPanel(width=8,
 ```
 
 
+
+
+<div class="vertical_spacer"></div>
 
 
 

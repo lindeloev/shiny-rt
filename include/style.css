@@ -7,13 +7,15 @@ h1 {
   font-size: 28px;
   font-weight: bold;
   padding-top: 20px;
+  clear: both;
 }
 
 /* HEADING 2 */
 h2 {
   font-size: 24px;
   padding: 0px;
-  padding-top: 20px;d
+  padding-top: 20px;
+  clear: both;
 }
 
 /* First h2 in section */
@@ -26,6 +28,7 @@ h3 {
   font-size: 18px;
   font-weight: bold;
   padding-top: 20px;
+  clear: both;
 }
 
 /* First h3 in section */
@@ -35,4 +38,10 @@ h3 {
 
 li{
   margin: 6px 0;
+}
+
+
+.vertical_spacer{
+  height: 100px; 
+  clear:both;
 }
