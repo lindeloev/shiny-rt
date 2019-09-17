@@ -1,6 +1,11 @@
+.gitignore
 .Rproj.user
 delete
 .RData
 .Rhistory
+
+
 shiny_rt.Rproj
 rsconnect
+mrt data maker.R
+brms custom distributions.R
