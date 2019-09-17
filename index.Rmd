@@ -378,7 +378,7 @@ Here are some fun challenges:
  
  * **Fit champ:** There is a special reward if you can fit the data so well that the [mean squared error (MSE)](https://en.wikipedia.org/wiki/Mean_squared_error) drops below 40. Use the keyboard arrows to fine-tune parameters. The MSE in the plots is multiplied by 10.000 to give easy-to-read numbers.
  
- * **Optimal champ:** Use [`brms`](https://github.com/paul-buerkner/brms) to find the optimal fits as shown in the code snippets. The empirical datasets are in the `rtdists` package. Use `library(rtdists'); data('rr98'); data('speed_acc')` to load them. <a href="https://raw.githubusercontent.com/lindeloev/shiny-rt/master/mrt_data.csv" download>Download the MRT data here</a>. You can also try and use the (frequentist) [`gamlss` package](https://www.gamlss.com/), though it's harder to interpret the results.
+ * **Optimal champ:** Use [`brms`](https://github.com/paul-buerkner/brms) to find the optimal fits as shown in the code snippets. The empirical datasets are in the `rtdists` package. Use `library(rtdists')`, `data('rr98')`, and `data('speed_acc')` to load them. <a href="https://raw.githubusercontent.com/lindeloev/shiny-rt/master/mrt_data.csv" download>Download the MRT data here</a>. You can also try and use the (frequentist) [`gamlss` package](https://www.gamlss.com/), though it's harder to interpret the results.
 
 
 <br /><br />
@@ -989,6 +989,6 @@ Let's unpack this:
  
  * `covariates` could be, e.g., `trial_no + bad_lag1`, i.e., the effect of time (people typically get faster with practice) and longer RTs on the first trial in a block (you need to code this variable). It is often a good idea to $scale$ these to help the model fit, and to $center$ them (possible for continuous and binary predictors) so that the effect of `condition` represents the mean of the other conditions rather than a certain combination. You can use `scale` to scale and center.
  
- * `(condition | id)` models the expected individual differences in general `rt`, and allows the effect of `condition` to vary between participants. The practical effect of specifying a random effect rather than a fixed `condition:id` effect is that you get *shrinkage* in the former, naturally imposing a bit of control for outliers. Unfortunately, complicated random effects sometimes increase computation time considerably.
+ * `(condition | id)` models the expected individual differences in general `rt`, and allows the effect of `condition` to vary between participants. The practical effect of specifying a random effect rather than a fixed `condition:id` effect is that [you get *shrinkage* in the former](https://lindeloev.net/lets-rename-fixed-to-population-level-and-random-to-varying/), naturally imposing a bit of control for outliers. Unfortunately, complicated random effects sometimes increase computation time considerably.
  
  * `(1 | nuisance)` is a way to let the model "understand" a structure in the data, without having it affect the fixed parameter estimates. If you have a factorial design, the otherwise non-modeled design variables would generally go here.
