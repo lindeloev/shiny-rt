@@ -26,7 +26,8 @@ The hard part was getting this to run on the web, which required around 6 evenin
  
  * The Google Cloud server is just an IP address which is not memorable. After learning that I could not make a true web alias, I tried making an iframe in a GitHub page. However, because the Google Cloud server had no SSL certificate (no https://), GitHub Pages would not load content from it. As you can see, I hosted the iframe on my personal website instead. I had to add a .htaccess file to redirect https (SSL) traffic to http:
 
-
+```
     RewriteEngine on
     RewriteCond %{HTTP:X-Forwarded-Proto} https
     RewriteRule ^(.*)$ http://lindeloev.net/shiny/rt [R=301,L]
+```
