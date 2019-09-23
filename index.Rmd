@@ -14,20 +14,11 @@ runtime: shiny
 
 <!-- 
 For everyone looking here: setting up my own shiny server caused major
-issues with:
- 
- * Hash links (anchors) do not work.
- * The content does not float below the TOC on narrow screens (mobile).
- * Files cannot be served via shiny, so I have to link to the GitHub folder.
- * No HTTPS certificate, so could not host index.html at lindeloev.github.io.
- 
-These issue do not apply to shinyapps.io or when running locally.
-
+issues. See more at https://github.com/lindeloev/shiny-rt.
 
 TO DO for later and probably never...
-   *  add brms families for shifted Weibull and shifted Wald
+   *  add brms families for shifted Weibull and shifted Wald. And LBA?
    * (Minor) The dataset selector does not update the trims and bin values when these are set in set_data
-   * Server problem: Make the links work inside the iframe and the menu should float top.
 -->
 
 

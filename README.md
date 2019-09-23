@@ -1,7 +1,19 @@
 # Reaction Time Distributions - An Interactive Overview
-This is the code underlying [this guide](http://lindeloev.net/shiny/rt/). You can run it in RStudio or on a shiny server. I set up a free one at Google Cloud, which host it right now. If you expect fewer visitors, using RStudios built-in upload to [http://shinyapps.io](http://shinyapps.io) is very convenient. 
+This is the code underlying [this guide](http://lindeloev.net/shiny/rt/). There is a [non-interactive version here](https://lindeloev.github.io/shiny-rt/) if the interactive version doesn't run. You can run the interactive verison it in RStudio (see below) or on a shiny server. If you expect fewer visitors, using RStudios built-in upload to [http://shinyapps.io](http://shinyapps.io) is very convenient. If you expect more users, I set up a free one at Google Cloud, which host it right now.
 
 The file `index.html` is hosted locally at lindeloev.net to make Twitter Cards etc. work.
+
+
+## Run on your own computer
+
+ * Download the files to a folder
+ 
+ * If you haven't already: Install and open RStudio. Then run this in the console to install the needed packages: `install.packages('shiny', 'rtdists')`
+ 
+ * Open `index.Rmd`.
+ 
+ * Press CTRL + SHIFT + K to launch it. Navigate the document in the Viewer pane or open it in the browser by clicking the small icon at the top of the Viewer pane. 
+
 
 ## How to set up a Shiny Server
 The hard part was getting this to run on the web, which required around 6 evenings and a lot of debugging. [http://shinyapps.io](http://shinyapps.io) is very convenient for RStudio users, but the server shuts down after a document has been in use for 25 hours in a month. I choose to set up a shiny server on Google Cloud because they offered a year's worth of free computing and pretty low charges after that. I used [this excellent guide](https://github.com/paeselhz/RStudio-Shiny-Server-on-GCP) although it needs a few updates:
