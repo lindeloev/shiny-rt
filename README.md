@@ -1,7 +1,7 @@
 # Reaction Time Distributions - An Interactive Overview
 This is the code underlying [this guide](http://lindeloev.net/shiny/rt/). There is a [non-interactive version here](https://lindeloev.github.io/shiny-rt/) if the interactive version doesn't run. You can run the interactive verison it in RStudio (see below) or on a shiny server. If you expect fewer visitors, using RStudios built-in upload to [http://shinyapps.io](http://shinyapps.io) is very convenient. If you expect more users, I set up a free one at Google Cloud, which host it right now.
 
-The file `index.html` is hosted locally at lindeloev.net to make Twitter Cards etc. work.
+The file `include/index.html` is hosted locally at lindeloev.net to make Twitter Cards etc. work.
 
 
 ## Run on your own computer
