@@ -855,7 +855,7 @@ Now we use the [shifted log-normal](#slog) to ask: "Does median RT differ by con
 ```{r, eval=FALSE}
 library(brms)
 fit = brm(formula = rt ~ condition + (1|id),
-          dat = data, 
+          data = data, 
           family = shifted_lognormal(),
           file = 'fit_slog')  # Save all that hard work.
 ```
