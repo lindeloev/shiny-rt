@@ -914,7 +914,7 @@ ndt       0.17      0.00     0.17     0.18 1.00     1576     1724
 
 
 
-Because $\mu$ and $\sigma$ define the *log*-normal distribution, they are on a log scale. This means that we expect a median RT of $ndt + exp(\mu) = 0.17 + exp(-0.69) = 0.50$ seconds for condition "accuracy" (the intercept), and a median RT of `exp(-0.69 -0.40) = 0.34` seconds for condition "speed". If you get confused about these transformations, worry not. `brms` has you covered, no matter the distribution:
+Because $\mu$ and $\sigma$ define the *log*-normal distribution, they are on a log scale. This means that we expect a median RT of $ndt + exp(\mu) = 0.17 + exp(-0.69) = 0.67$ seconds for condition "accuracy" (the intercept), and a median RT of $exp(-0.69 -0.40) = 0.51$ seconds for condition "speed". If you get confused about these transformations, worry not. `brms` has you covered, no matter the distribution:
 
 ```{r, eval=FALSE}
 marginal_effects(fit)  # Back-transformed parameter estimates
